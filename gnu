@@ -77,7 +77,7 @@ case "$_gnu_action" in
   unload)
     typeset -f gnu >/dev/null && unset -f gnu
   ;;
-  on)
+  on|load)
     if _gnu_check; then
       export PATH="$_gnu_base/bin:$PATH"
       export MANPATH="$_gnu_base/share/man:$MANPATH"
