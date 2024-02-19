@@ -72,12 +72,14 @@ case "$_gnu_action" in
   load)
     if _gnu_check; then
       eval "gnu() { source \"$_gnu_script\" \"\$@\"; };"
+      export PATH="$_gnu_base/bin:$PATH"
+      export MANPATH="$_gnu_base/share/man:$MANPATH"
     fi
   ;;
   unload)
     typeset -f gnu >/dev/null && unset -f gnu
   ;;
-  on|load)
+  on)
     if _gnu_check; then
       export PATH="$_gnu_base/bin:$PATH"
       export MANPATH="$_gnu_base/share/man:$MANPATH"
