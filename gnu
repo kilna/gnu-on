@@ -67,7 +67,7 @@ case "$_gnu_action" in
     unset _gnu_found_usage
   ;;
   install)
-    /bin/bash -c "$(curl -fsSL $_gnu_url/install.sh)"
+    /bin/bash -c "$(curl -fsSL $_gnu_url)"
   ;;
   load)
     if _gnu_check; then
