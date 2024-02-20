@@ -173,4 +173,6 @@ unset var vars
 
 return ${gnu_exit:-0}
 
+# Usage is appended below by install.sh from contents of Usage section
+# of README.md
 __USAGE__
