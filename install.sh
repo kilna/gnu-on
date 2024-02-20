@@ -22,6 +22,7 @@ output=0
 while IFS='' read line; do
   if [ "$output" -gt 0 ] || [ "$line" == 'USAGE:'* ]; then
     if [ "$line" == '```' ]; then break; fi
+    output=1
     echo "$line" >>/usr/local/bin/gnu
   fi
 done <"$TMPDIR/gnu-on/README.md"
