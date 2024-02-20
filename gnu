@@ -75,11 +75,12 @@ _gnu_log "path: $_gnu_path"
 _gnu_log "base: $_gnu_base"
 
 _gnu_help() {
-  local found=0
-  while read line; do
-    (( found )) && echo "$line"
-    if [ "$line" == __USAGE__ ]; then found=1; fi
+  found=0
+  while IFS='' read line; do
+    [ "$found" -eq 1 ] && echo "$line"
+    [ "$line" == '__USAGE__' ] && found=1
   done < "$_gnu_script"
+  unset found
 }
 
 _gnu_status() {

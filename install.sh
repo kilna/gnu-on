@@ -20,11 +20,10 @@ sudo chmod +x /usr/local/bin/gnu
 curl -o "$TMPDIR/gnu-on/README.md" -fsSL $gh_url/kilna/gnu-on/main/README.md
 output=0
 while IFS='' read line; do
-  if [ "$output" -gt 0 ] || [ "$line" == 'USAGE:'* ]; then
-    if [ "$line" == '```' ]; then break; fi
-    output=1
-    echo "$line" >>/usr/local/bin/gnu
-  fi
+  case "$line" in USAGE:*) output=1;; esac
+  [ "$output" -eq 0 ] && continue
+  [ "$line" == '```' ] && break
+  echo "$line" >>/usr/local/bin/gnu
 done <"$TMPDIR/gnu-on/README.md"
 rm -rf "$TMPDIR/gnu-on/"
 
