@@ -8,10 +8,11 @@ Run GNU tools by default on Mac in an easily switchable way
   tools on the Mac by default *without* having to use Homebrew's g-prefixes
   (for example `gsed` to run GNU's `sed`... you can have the same `sed` as
   linux)
-* Loads all tools into one PATH directory for easy enabling/disabling
+* Loads all tools into one directory for easy enabling/disabling in `$PATH`
 * Provides a shell extension to make switching between GNU and default MacOS
   CLI tools
-* Compatibility with both `bash` and `zsh`
+* Also sets up symlinks so the `man` command for help works as well
+* Compatibility with both `bash`, `zsh` and `ksh`
 * Compatibility with new M-series MacOS machines
 
 ## Tools Installed
@@ -21,7 +22,6 @@ MacOS tools:
 
 GNU tools:
 * coreutils (many CLI utils)
-* bash
 * findutils (find, locate, updatedb, xargs)
 * grep (egrep, fgrep)
 * awk
@@ -40,43 +40,75 @@ $ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/kilna/gnu-on/main
 
 ## Usage
 
-Load into shell as an extension (don't need to source after)
+```
+USAGE: gnu [command] [options]
+
+Options:
+
+  --verbose : Show debugging information
+         -v
+
+Commands:
+
+  * load    : Enable shell extension
+              (Running 'gnu' after does not require sourcing or eval)
+
+  * unload  : Disable shell extension
+
+  * on      : Loads the shell extension, and includes the GNU CLI tool in your
+              $PATH, overriding default MacOS CLI utils
+
+  * off     : Remove GNU from your $PATH, re-enabling MacOS CLI utils
+
+    status  : Show the status of gnu shell extension and path
+
+    env     : Display shell text that can enable GNU CLI utils, without
+              extension
+
+    profile : Adds 'eval "$(gnu on)"' to ~/.profile if it isn't there
+    bashrc  : ^ Same for ~/.bashrc
+    zshrc   : ^ Same for ~/.zshrc
+    kshrc   : ^ Same for ~/.kshrc
+
+    help    : Show usage
+
+* = Command will display shell code to run if not sourced or within an eval.
+    If sourced, the commands will be run directly in the current shell.
+
+For usage examples see https://github.com/kilna/gnu-on
+```
+
+## Examples
+
+First, enable in your shell (pick one):
 
 ```
-$ source /usr/local/bin/gnu
-$ gnu on                             # Turns on gnu utils in path
-$ gnu off                            # Turns off gnu utils in path
+$ gnu bashrc
+$ gnu zshrc
+$ gnu kshrc
+$ gnu profile     # Note: only tested with the above shells
 ```
 
-Enabling in .bashrc
+Fire up a new shell session (or run `eval "$(gnu on)"` yourself) and check:
 
 ```
-$ echo 'source /usr/local/bin/gnu && gnu on' >> ~/.bashrc
+$ gnu status
+gnu shell extension function is loaded
+/usr/local/gnu/bin is in path (gnu is on)
+$ sort --version
+sort (GNU coreutils) 9.4
+...
 ```
 
-Turn on via eval
+To disable GNU utils and return to standard MacOS CLI commands:
 
 ```
-$ eval "$(gnu eval-on)"
-```
-
-Or alternately source without loading as extension:
-
-```
-$ . /usr/local/bin/gnu on
-```
-
-Disabling of gnu tools (and restore to MacOS default tools) is done with
-either `gnu off` or `gnu eval-off` using the same syntax as "on":
-
-```
-$ eval "$(gnu eval-off)"
-```
-
-Or:
-
-```
-$ . /usr/local/bin/gnu off
+$ gnu off
+$ gnu status
+gnu shell extension function is loaded
+/usr/local/gnu/bin is in path (gnu is off)
+$ sort --version
+2.3-Apple (165.80.1)
 ```
 
 ## Manual enabling
