@@ -11,12 +11,13 @@ export _gnu_action=load
 export _gnu_verbose=0
 while [ $# -gt 0 ]; do
   case "$1" in
-    load|unload|on|off|status|env|help) _gnu_action="$1";;
-    --verbose|-v)                       _gnu_verbose=1;;
-    --help|-h)                          _gnu_action='help';;
-    *)                                  _gnu_action='help'
-                                        _gnu_fail "Unknown option: $1"
-                                        break;;
+    load|unload|on|off|status|env|bashrc|zshrc|help)
+                   _gnu_action="$1";;
+    --verbose|-v)  _gnu_verbose=1;;
+    --help|-h)     _gnu_action='help';;
+    *)             _gnu_action='help'
+                   _gnu_fail "Unknown option: $1"
+                   break;;
   esac
   shift
 done
@@ -127,9 +128,15 @@ _gnu_env() {
   echo "export MANPATH=\"$_gnu_base/share/man:\$MANPATH\""
 }
 
+_gnu_rcfile() {
+  grep -xFq 'eval "$(gnu on)"' "$1" && return
+  echo 'eval "$(gnu on)"' >>"$1"
+}
+
 case "$_gnu_action" in
   help)     _gnu_help;;
   install)  /bin/bash -c "$(curl -fsSL $_gnu_url)";;
+  *shrc)    _gnu_rcfile "$HOME/.$_gnu_action";;
   load)     if _gnu_eval; then eval "$(_gnu_load)"   || _gnu_fail
                           else _gnu_load; fi;;
   unload)   if _gnu_eval; then eval "$(_gnu_unload)" || _gnu_fail

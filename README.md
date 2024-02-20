@@ -65,10 +65,8 @@ Commands:
     env     : Display shell text that can enable GNU CLI utils, without
               extension
 
-    profile : Adds 'eval "$(gnu on)"' to ~/.profile if it isn't there
-    bashrc  : ^ Same for ~/.bashrc
+    bashrc : Adds 'eval "$(gnu on)"' to ~/.bashrc if it isn't there
     zshrc   : ^ Same for ~/.zshrc
-    kshrc   : ^ Same for ~/.kshrc
 
     help    : Show usage
 
@@ -85,8 +83,6 @@ First, enable in your shell (pick one):
 ```
 $ gnu bashrc
 $ gnu zshrc
-$ gnu kshrc
-$ gnu profile     # Note: only tested with the above shells
 ```
 
 Fire up a new shell session (or run `eval "$(gnu on)"` yourself) and check:
