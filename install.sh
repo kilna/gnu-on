@@ -15,7 +15,6 @@ curl -o "$TMPDIR/gnu-on/gnu" -fsSL $gh_url/kilna/gnu-on/main/gnu
 sudo mkdir -p /usr/local/bin
 sudo mv -v -f "$TMPDIR/gnu-on/gnu" /usr/local/bin/
 sudo chmod 755 /usr/local/bin/gnu
-sudo chown root:admin /usr/local/bin/gnu
 
 # Append USAGE from the README.md so I don't have to update in two places
 curl -o "$TMPDIR/gnu-on/README.md" -fsSL $gh_url/kilna/gnu-on/main/README.md
