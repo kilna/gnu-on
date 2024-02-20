@@ -12,7 +12,7 @@ Run GNU tools by default on Mac in an easily switchable way
 * Provides a shell extension to make switching between GNU and default MacOS
   CLI tools
 * Also sets up symlinks so the `man` command for help works as well
-* Compatibility with both `bash`, `zsh` and `ksh`
+* Compatibility with both `bash` and `zsh`
 * Compatibility with new M-series MacOS machines
 
 ## Tools Installed
@@ -93,7 +93,7 @@ Fire up a new shell session (or run `eval "$(gnu on)"` yourself) and check:
 
 ```
 $ gnu status
-gnu shell extension function is loaded
+/usr/local/bin/gnu shell extension function is loaded
 /usr/local/gnu/bin is in path (gnu is on)
 $ sort --version
 sort (GNU coreutils) 9.4
@@ -105,7 +105,7 @@ To disable GNU utils and return to standard MacOS CLI commands:
 ```
 $ gnu off
 $ gnu status
-gnu shell extension function is loaded
+/usr/local/bin/gnu shell extension function is loaded
 /usr/local/gnu/bin is in path (gnu is off)
 $ sort --version
 2.3-Apple (165.80.1)

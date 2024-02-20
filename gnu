@@ -22,49 +22,31 @@ while [ $# -gt 0 ]; do
 done
 
 _gnu_log() {
-  (( _gnu_verbose )) || return
+  [ "$_gnu_verbose" -eq 0 ] && return
   for arg in "$@"; do
     echo "$arg" | sed -e 's/^/gnu: /' >&2
   done
 }
 
-export _gnu_eval=0
+_gnu_eval() { return 1; }
 export _gnu_source="$0"
-if [ -n "$ZSH_VERSION" ]; then 
-  case $ZSH_EVAL_CONTEXT in *:file) _gnu_eval=1;; esac
+if [ -n "$ZSH_VERSION" ]; then
+  case "$ZSH_EVAL_CONTEXT" in *:file) _gnu_eval() { return 0; }; ;; esac
   _gnu_source="${(%):-%x}"
-elif [ -n "$KSH_VERSION" ]; then
-  arg0_canonical="$(cd -- "$(dirname -- "$0")" && pwd -P)/$(basename -- "$0")"
-  script_canonical="$(
-    cd -- "$(dirname -- "${.sh.file}")" && pwd -P)/$(basename -- "${.sh.file}"
-  )"
-  [ "$arg0_canonical" != "$script_canonical" ] && _gnu_eval=1
-  unset arg0_canonical script_canonical
-  _gnu_source="${.sh.file}"
 elif [ -n "$BASH_VERSION" ]; then
-  (return 0 2>/dev/null) && _gnu_eval=1
+  if (return 0 2>/dev/null); then  _gnu_eval() { return 0; }; fi
   _gnu_source="${BASH_SOURCE[0]}"
 else
-  if [ "${0##*/}" == 'gnu' ]; then
-    _gnu_eval=1
-  else
-    # We're in a shell that doesn't tell us the source file, and it looks like
-    # $0 isn't a reference to the gnu script... find it in the path instead
-    _gnu_source="$(whereis -b -q gnu 2>/dev/null || which gnu 2>/dev/null)"
-    if [ -z "$_gnu_source" ]; then
-      echo "Cannot determine 'gnu' location in this shell" >&2
-      exit 1
-    fi
-  fi
+  echo "Unsupported shell. Please use bash or zsh" >&2
+  sleep 5 # If we're sourced (no way to tell) give the user time to see mesage
+  exit 1
 fi
 
 _gnu_log "action: $_gnu_action"
 _gnu_log "eval: $_gnu_eval"
 _gnu_log "source: $_gnu_source"
 
-_gnu_eval() { (( $_gnu_eval )) || return 1; };
-
-export _gnu_url="https://raw.githubusercontent.com/kilna/gnu-on/main/install.sh"
+export _gnu_url="https://githubraw.com/kilna/gnu-on/main/install.sh"
 export _gnu_script="$(realpath "$_gnu_source")" # Canonical script location
 export _gnu_path="$(echo "$_gnu_script" | sed -e "s;^$HOME/;~/;")" # Pretty
 export _gnu_base=/usr/local/gnu;
@@ -78,16 +60,16 @@ _gnu_help() {
   found=0
   while IFS='' read line; do
     [ "$found" -eq 1 ] && echo "$line"
-    [ "$line" == '__USAGE__' ] && found=1
+    [ "$line" = '__USAGE__' ] && found=1
   done < "$_gnu_script"
   unset found
 }
 
 _gnu_status() {
   if typeset -pf gnu >/dev/null 2>&1; then
-    echo "gnu shell extension function is loaded"
+    echo "$_gnu_script shell extension function is loaded"
   else
-    echo "gnu shell extension function is not loaded"
+    echo "$_gnu_script shell extension function is not loaded"
   fi
   if echo ":$PATH:" | grep -Fq ":$_gnu_base/bin:"; then
     echo "$_gnu_base/bin is in path (gnu is on)"
@@ -104,7 +86,7 @@ _gnu_warn() {
 _gnu_load() {
   # Load the gnu function into the shell, which in turn sources this file
   _gnu_warn
-  echo "gnu() { source '$_gnu_script' \"\$@\"; };"
+  echo "gnu() { . '$_gnu_script' \"\$@\"; };"
 }
 
 _gnu_unload() {
@@ -137,7 +119,7 @@ _gnu_off() {
   echo -n   "|tr '\n' :"                        # Turns newlines back to :
   echo -n   "|sed -e 's/:\$//'"                 # Removes trailing :
   echo    ')"'
-  echo 'if [ "$MANPATH" == "" ]; then unset MANPATH; fi'
+  echo 'if [ "$MANPATH" = "" ]; then unset MANPATH; fi'
 }
 
 _gnu_env() {
@@ -162,7 +144,7 @@ esac
 
 if _gnu_eval; then
   _gnu_log "$(echo "$PATH" | tr : '\n' | sed 's/^/PATH: /')"
-  _gnu_log "$(typeset -pf gnu 2>/dev/null|| echo 'no gnu func')"
+  _gnu_log "$(typeset -pf gnu 2>/dev/null || echo 'no gnu function')"
   _gnu_log "$(_gnu_status)"
 fi
 
@@ -173,12 +155,14 @@ _gnu_eval || exit $_gnu_exit
 [ "$_gnu_exit" -gt 0 ] && gnu_exit=$_gnu_exit
 
 # Clean up all _gnu functions
-funcs="$(typeset -pf|grep -e '^_gnu.* ()'|sed -e 's/ ().*//')"
-for func in $funcs; do unset -f $func; done; unset funcs func
+funcs=($(typeset -pf | grep -e '^_gnu.* ()' | sed -e 's/ ().*//'))
+for func in "${funcs[@]}"; do unset -f $func; done
+unset func funcs
 
 # Clean up all _gnu vars
-vars="$(typeset -px|cut -f2- -d' '|sed -e 's/-x //;s/=.*//'|grep -e ^_gnu|cat)"
-for var in $vars; do unset $var; done; unset vars var
+vars=($( typeset -px|cut -f2- -d' '|sed -e 's/-x //; s/=.*//'|grep -e ^_gnu ))
+for var in "${vars[@]}"; do unset $var; done
+unset var vars
 
 return ${gnu_exit:-0}
 
