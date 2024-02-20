@@ -2,7 +2,7 @@
 
 set -e -u
 
-gh_url=https://raw.githubusercontent.com
+gh_url=https://githubraw.com
 
 if ! $(which brew >/dev/null); then # Install brew
   echo "Installing brew"

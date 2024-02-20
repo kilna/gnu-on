@@ -35,7 +35,7 @@ This will install all of the above, and make symlinks into `/usr/local/gnu`
 or `/opt/gnu` for all gnu tools, so you have one path to add.
 
 ```
-$ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/kilna/gnu-on/main/install.sh)"
+$ sh -c "$(curl -fsSL https://githubraw.com/kilna/gnu-on/main/install.sh)"
 ```
 
 ## Usage
