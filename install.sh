@@ -60,8 +60,14 @@ for pkg in $packages; do
 
 done
 
-echo
-/usr/local/bin/gnu autorc
-echo
-echo "Your next new shell session will have the gnu shell extension enabled"
+cat <<'EOF'
 
+
+To enable in your shell as a shell extension, run:
+
+$ gnu rcfile
+
+Then you will be able to use 'gnu on' and 'gnu off' the next time you fire up
+a new shell.
+
+EOF

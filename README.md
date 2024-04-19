@@ -78,11 +78,10 @@ For usage examples see https://github.com/kilna/gnu-on
 
 ## Examples
 
-First, enable in your shell (pick one):
+First, enable in your shell after install, if you haven't already:
 
 ```
-$ gnu bashrc
-$ gnu zshrc
+$ gnu rcfile
 ```
 
 Fire up a new shell session (or run `eval "$(gnu on)"` yourself) and check:

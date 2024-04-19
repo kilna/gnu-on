@@ -12,7 +12,7 @@ export _gnu_verbose=0
 export _gnu_shell=''
 while [ $# -gt 0 ]; do
   case "$1" in
-    load|unload|on|off|status|env|bashrc|zshrc|autorc|help)
+    load|unload|on|off|status|env|rcfile|help)
                    _gnu_action="$1";;
     --verbose|-v)  _gnu_verbose=1;;
     --help|-h)     _gnu_action='help';;
@@ -102,13 +102,14 @@ _gnu_unload() {
   echo 'typeset -pf gnu >/dev/null 2>&1 && unset -f gnu'
 }
 
-# Used to add/remove entries from PATH/MANPATH
+# Used to remove or prepend entries from PATH / MANPATH
 _gnu_pathspec() {
   pathvar="$1" # PATH or MANPATH
-  exclude="$2" # path to be removed from the env var
-  if [ -n "${3:-}" ]; then add="$3:"; else add=''; fi # Optional path to add
+  action="$2"  # + to prepend and cleanup, - to cleanup (remove) only
+  exclude="$3" # path to be added / cleaned from the env var
+  if [ "$action" == '+' ]; then add="$3:"; else add=''; fi
   echo -n 'export '$pathvar'="'$add'$('
-  echo -n   'echo "$'$pathvar'"'     # Gets PATH/MANPATH in : format
+  echo -n   'echo "$'$pathvar'"'     # Gets PATH / MANPATH in : format
   echo -n   "|tr : '\n'"             # Turns : into newlines
   echo -n   "|grep -vxF '$exclude'"  # Removes the path from entries
   echo -n   '|uniq'                  # Removes duplicate entries
@@ -125,19 +126,22 @@ _gnu_on() {
 
 _gnu_off() {
   _gnu_warn
-  _gnu_pathspec PATH    $_gnu_base/bin
-  _gnu_pathspec MANPATH $_gnu_base/share/man
+  _gnu_pathspec PATH    - $_gnu_base/bin
+  _gnu_pathspec MANPATH - $_gnu_base/share/man
   echo 'if [ "$MANPATH" = "" ]; then unset MANPATH; fi'
 }
 
 _gnu_env() {
-  _gnu_pathspec PATH    $_gnu_base/bin       $_gnu_base/bin
-  _gnu_pathspec MANPATH $_gnu_base/share/man $_gnu_base/share/man
+  _gnu_pathspec PATH    + $_gnu_base/bin
+  _gnu_pathspec MANPATH + $_gnu_base/share/man
 }
 
 _gnu_rcfile() {
   local rcfile="${1:-$HOME/.${_gnu_shell}rc}"
-  grep -xFq 'eval "$(gnu on)"' "$rcfile" && return
+  if grep -Eq 'gnu (on|load|env)' "$rcfile"; then
+    echo "The gnu shell extension is already in $rcfile"
+    return
+  fi
   echo "Adding gnu shell extension loader to $rcfile"
   echo 'eval "$(gnu on)"' >>"$rcfile"
 }
@@ -145,8 +149,7 @@ _gnu_rcfile() {
 case "$_gnu_action" in
   help)     _gnu_help;;
   install)  /bin/bash -c "$(curl -fsSL $_gnu_url)";;
-  *shrc)    _gnu_rcfile "$HOME/.$_gnu_action";;
-  autorc)   _gnu_rcfile;;
+  rcfile)   _gnu_rcfile;;
   load)     if _gnu_eval; then eval "$(_gnu_load)"   || _gnu_fail
                           else _gnu_load; fi;;
   unload)   if _gnu_eval; then eval "$(_gnu_unload)" || _gnu_fail
