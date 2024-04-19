@@ -10,27 +10,31 @@ if ! $(which brew >/dev/null); then # Install brew
 fi
 
 echo "Copying gnu-on script..."
+[ -d /usr/local/bin ] || sudo mkdir -p /usr/local/bin
 mkdir -p "$TMPDIR/gnu-on"
-curl -o "$TMPDIR/gnu-on/gnu" -fsSL $gh_url/kilna/gnu-on/main/gnu
-sudo mkdir -p /usr/local/bin
-sudo mv -v -f "$TMPDIR/gnu-on/gnu" /usr/local/bin/
-sudo chmod 755 /usr/local/bin/gnu
+if [ -e "$(dirname $0)/gnu" ] && [ -e "$(dirname $0)/README.md" ]; then
+  cp -v -f "$(dirname $0)/gnu" "$TMPDIR/gnu-on"
+  cp -v -f "$(dirname $0)/README.md" "$TMPDIR/gnu-on"
+else
+  curl -o "$TMPDIR/gnu-on/gnu" -fsSL $gh_url/kilna/gnu-on/main/gnu
+  curl -o "$TMPDIR/gnu-on/README.md" -fsSL $gh_url/kilna/gnu-on/main/README.md
+fi
 
 # Append USAGE from the README.md so I don't have to update in two places
-curl -o "$TMPDIR/gnu-on/README.md" -fsSL $gh_url/kilna/gnu-on/main/README.md
 output=0
 while IFS='' read line; do
   case "$line" in USAGE:*) output=1;; esac
   [ "$output" -eq 0 ] && continue
   [ "$line" == '```' ] && break
-  echo "$line" >>/usr/local/bin/gnu
+  echo "$line" >>"$TMPDIR/gnu-on/gnu"
 done <"$TMPDIR/gnu-on/README.md"
+
+sudo mv -v -f "$TMPDIR/gnu-on/gnu" /usr/local/bin/
+sudo chmod 755 /usr/local/bin/gnu
+
 rm -rf "$TMPDIR/gnu-on/"
 
-base=/usr/local;
-if /opt/homebrew/bin/brew --prefix >/dev/null 2>&1; then
-  base=/opt
-fi
+base="$(brew --prefix)"
 
 sudo mkdir -p $base/gnu/bin
 sudo mkdir -p $base/gnu/share/man/man1
@@ -55,4 +59,9 @@ for pkg in $packages; do
   done
 
 done
+
+echo
+/usr/local/bin/gnu autorc
+echo
+echo "Your next new shell session will have the gnu shell extension enabled"
 

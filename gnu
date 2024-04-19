@@ -9,9 +9,10 @@ export _gnu_err=''
 export _gnu_exit=0
 export _gnu_action=load
 export _gnu_verbose=0
+export _gnu_shell=''
 while [ $# -gt 0 ]; do
   case "$1" in
-    load|unload|on|off|status|env|bashrc|zshrc|help)
+    load|unload|on|off|status|env|bashrc|zshrc|autorc|help)
                    _gnu_action="$1";;
     --verbose|-v)  _gnu_verbose=1;;
     --help|-h)     _gnu_action='help';;
@@ -34,9 +35,11 @@ export _gnu_source="$0"
 if [ -n "$ZSH_VERSION" ]; then
   case "$ZSH_EVAL_CONTEXT" in *:file) _gnu_eval() { return 0; }; ;; esac
   _gnu_source="${(%):-%x}"
+  _gnu_shell=zsh
 elif [ -n "$BASH_VERSION" ]; then
   if (return 0 2>/dev/null); then  _gnu_eval() { return 0; }; fi
   _gnu_source="${BASH_SOURCE[0]}"
+  _gnu_shell=bash
 else
   echo "Unsupported shell. Please use bash or zsh" >&2
   sleep 5 # If we're sourced (no way to tell) give the user time to see mesage
@@ -50,8 +53,7 @@ _gnu_log "source: $_gnu_source"
 export _gnu_url="https://githubraw.com/kilna/gnu-on/main/install.sh"
 export _gnu_script="$(realpath "$_gnu_source")" # Canonical script location
 export _gnu_path="$(echo "$_gnu_script" | sed -e "s;^$HOME/;~/;")" # Pretty
-export _gnu_base=/usr/local/gnu;
-/opt/homebrew/bin/brew --prefix >/dev/null 2>&1 && _gnu_base=/opt/gnu
+export _gnu_base="$(brew --prefix)/gnu" # Set to /usr/local or /opt by arch
 
 _gnu_log "script: $_gnu_script"
 _gnu_log "path: $_gnu_path"
@@ -73,9 +75,14 @@ _gnu_status() {
     echo "$_gnu_script shell extension function is not loaded"
   fi
   if echo ":$PATH:" | grep -Fq ":$_gnu_base/bin:"; then
-    echo "$_gnu_base/bin is in path (gnu is on)"
+    echo "$_gnu_base/bin is in PATH (gnu is on)"
   else
-    echo "$_gnu_base/bin is not in path (gnu is off)"
+    echo "$_gnu_base/bin is not in PATH (gnu is off)"
+  fi
+  if echo ":$MANPATH:" | grep -Fq ":$_gnu_base/share/man:"; then
+    echo "$_gnu_base/share/man is in MANPATH (gnu man pages are on)"
+  else
+    echo "$_gnu_base/share/man is not in MANPATH (gnu man pages are off)"
   fi
 }
 
@@ -95,6 +102,22 @@ _gnu_unload() {
   echo 'typeset -pf gnu >/dev/null 2>&1 && unset -f gnu'
 }
 
+# Used to add/remove entries from PATH/MANPATH
+_gnu_pathspec() {
+  pathvar="$1" # PATH or MANPATH
+  exclude="$2" # path to be removed from the env var
+  if [ -n "${3:-}" ]; then add="$3:"; else add=''; fi # Optional path to add
+  echo -n 'export '$pathvar'="'$add'$('
+  echo -n   'echo "$'$pathvar'"'     # Gets PATH/MANPATH in : format
+  echo -n   "|tr : '\n'"             # Turns : into newlines
+  echo -n   "|grep -vxF '$exclude'"  # Removes the path from entries
+  echo -n   '|uniq'                  # Removes duplicate entries
+  echo -n   '|awk NF'                # Removes blank entries
+  echo -n   "|tr '\n' :"             # Turns newlines back to :
+  echo -n   "|sed -e 's/:\$//'"      # Removes trailing :
+  echo    ')"'
+}
+
 _gnu_on() {
   _gnu_load
   _gnu_env
@@ -102,41 +125,28 @@ _gnu_on() {
 
 _gnu_off() {
   _gnu_warn
-  echo -n 'export PATH="$('
-  echo -n   'echo "$PATH"'                # Gets PATH in : delimited format
-  echo -n   "|tr : '\n'"                  # Turns : into newlines
-  echo -n   "|grep -vxF '$_gnu_base/bin'" # Removes the path from entries
-  echo -n   '|uniq'                       # Removes duplicate entries
-  echo -n   '|awk NF'                     # Removes blank entries
-  echo -n   "|tr '\n' :"                  # Turns newlines back to :
-  echo -n   "|sed -e 's/:\$//'"           # Removes trailing :
-  echo    ')"'
-  echo -n 'export MANPATH="$('
-  echo -n   'echo "$MANPATH"'                   # Gets MANPATH in : format
-  echo -n   "|tr : '\n'"                        # Turns : into newlines
-  echo -n   "|grep -vxF '$_gnu_base/share/man'" # Removes the path from entries
-  echo -n   '|uniq'                             # Removes duplicate entries
-  echo -n   '|awk NF'                           # Removes blank entries
-  echo -n   "|tr '\n' :"                        # Turns newlines back to :
-  echo -n   "|sed -e 's/:\$//'"                 # Removes trailing :
-  echo    ')"'
+  _gnu_pathspec PATH    $_gnu_base/bin
+  _gnu_pathspec MANPATH $_gnu_base/share/man
   echo 'if [ "$MANPATH" = "" ]; then unset MANPATH; fi'
 }
 
 _gnu_env() {
-  echo "export PATH=\"$_gnu_base/bin:\$PATH\""
-  echo "export MANPATH=\"$_gnu_base/share/man:\$MANPATH\""
+  _gnu_pathspec PATH    $_gnu_base/bin       $_gnu_base/bin
+  _gnu_pathspec MANPATH $_gnu_base/share/man $_gnu_base/share/man
 }
 
 _gnu_rcfile() {
-  grep -xFq 'eval "$(gnu on)"' "$1" && return
-  echo 'eval "$(gnu on)"' >>"$1"
+  local rcfile="${1:-$HOME/.${_gnu_shell}rc}"
+  grep -xFq 'eval "$(gnu on)"' "$rcfile" && return
+  echo "Adding gnu shell extension loader to $rcfile"
+  echo 'eval "$(gnu on)"' >>"$rcfile"
 }
 
 case "$_gnu_action" in
   help)     _gnu_help;;
   install)  /bin/bash -c "$(curl -fsSL $_gnu_url)";;
   *shrc)    _gnu_rcfile "$HOME/.$_gnu_action";;
+  autorc)   _gnu_rcfile;;
   load)     if _gnu_eval; then eval "$(_gnu_load)"   || _gnu_fail
                           else _gnu_load; fi;;
   unload)   if _gnu_eval; then eval "$(_gnu_unload)" || _gnu_fail
