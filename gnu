@@ -104,10 +104,10 @@ _gnu_unload() {
 
 # Used to remove or prepend entries from PATH / MANPATH
 _gnu_pathspec() {
-  pathvar="$1" # PATH or MANPATH
-  action="$2"  # + to prepend and cleanup, - to cleanup (remove) only
-  exclude="$3" # path to be added / cleaned from the env var
-  if [ "$action" == '+' ]; then add="$3:"; else add=''; fi
+  local pathvar="$1" # PATH or MANPATH
+  local action="$2"  # + to prepend and cleanup, - to cleanup (remove) only
+  local exclude="$3" # path to be added / cleaned from the env var
+  local add=''; if [ "$action" == '+' ]; then add="$3:"; fi
   echo -n 'export '$pathvar'="'$add'$('
   echo -n   'echo "$'$pathvar'"'     # Gets PATH / MANPATH in : format
   echo -n   "|tr : '\n'"             # Turns : into newlines
