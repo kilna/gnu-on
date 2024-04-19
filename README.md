@@ -89,7 +89,8 @@ Fire up a new shell session (or run `eval "$(gnu on)"` yourself) and check:
 ```
 $ gnu status
 /usr/local/bin/gnu shell extension function is loaded
-/usr/local/gnu/bin is in path (gnu is on)
+/usr/local/gnu/bin is not in PATH (gnu is off)
+/usr/local/gnu/share/man is not in MANPATH (gnu man pages are off)
 $ sort --version
 sort (GNU coreutils) 9.4
 ...
@@ -99,9 +100,10 @@ To disable GNU utils and return to standard MacOS CLI commands:
 
 ```
 $ gnu off
-$ gnu status
 /usr/local/bin/gnu shell extension function is loaded
-/usr/local/gnu/bin is in path (gnu is off)
+/usr/local/gnu/bin is not in PATH (gnu is off)
+/usr/local/gnu/share/man is not in MANPATH (gnu man pages are off)
+$ gnu status
 $ sort --version
 2.3-Apple (165.80.1)
 ```
