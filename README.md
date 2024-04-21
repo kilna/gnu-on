@@ -35,7 +35,13 @@ This will install all of the above, and make symlinks into `/usr/local/gnu`
 or `/opt/gnu` for all gnu tools, so you have one path to add.
 
 ```
-sh -c "$(curl -fsSL https://githubraw.com/kilna/gnu-on/main/install.sh)"
+curl -fL https://githubraw.com/kilna/gnu-on/main/install.sh | sudo sh
+```
+
+To install without root (administrator) privileges:
+
+```
+curl -fL https://githubraw.com/kilna/gnu-on/main/install.sh | sh
 ```
 
 ## Usage
