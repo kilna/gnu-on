@@ -89,8 +89,8 @@ Fire up a new shell session (or run `eval "$(gnu on)"` yourself) and check:
 ```
 $ gnu status
 /usr/local/bin/gnu shell extension function is loaded
-/usr/local/gnu/bin is not in PATH (gnu is off)
-/usr/local/gnu/share/man is not in MANPATH (gnu man pages are off)
+/usr/local/gnu/bin is not in PATH (gnu is on)
+/usr/local/gnu/share/man is not in MANPATH (gnu man pages are on)
 $ sort --version
 sort (GNU coreutils) 9.4
 ...
