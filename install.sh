@@ -34,7 +34,7 @@ sudo chmod 755 /usr/local/bin/gnu
 
 rm -rf "$TMPDIR/gnu-on/"
 
-base="$(brew --prefix)"
+base="$(brew --prefix | sed -e 's|/homebrew$||')"
 
 sudo mkdir -p $base/gnu/bin
 sudo mkdir -p $base/gnu/share/man/man1

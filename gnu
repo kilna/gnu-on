@@ -53,7 +53,7 @@ _gnu_log "source: $_gnu_source"
 export _gnu_url="https://githubraw.com/kilna/gnu-on/main/install.sh"
 export _gnu_script="$(realpath "$_gnu_source")" # Canonical script location
 export _gnu_path="$(echo "$_gnu_script" | sed -e "s;^$HOME/;~/;")" # Pretty
-export _gnu_base="$(brew --prefix)/gnu" # Set to /usr/local or /opt by arch
+export _gnu_base="$(brew --prefix | sed -e 's|/homebrew$||')/gnu" # Set to /usr/local or /opt by arch
 
 _gnu_log "script: $_gnu_script"
 _gnu_log "path: $_gnu_path"
