@@ -23,6 +23,7 @@ MacOS tools:
 GNU tools:
 * coreutils (many CLI utils)
 * findutils (find, locate, updatedb, xargs)
+* binutils (strings)
 * grep (egrep, fgrep)
 * awk
 * sed

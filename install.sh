@@ -61,7 +61,7 @@ base="$($as_user brew --prefix | sed -e 's|/homebrew$||')"
 mkdir -p $base/gnu/bin
 mkdir -p $base/gnu/share/man/man1
 
-packages="coreutils findutils grep gawk gnu-sed gnu-tar gnu-which"
+packages="coreutils findutils grep gawk gnu-sed gnu-tar gnu-which binutils"
 
 for pkg in $packages; do
 
@@ -70,15 +70,21 @@ for pkg in $packages; do
   echo "Symlinking..."
   prefix=$($as_user brew --prefix "$pkg")
 
-  cd "$prefix/libexec/gnubin/"
-  for file in *; do
-    ln -v -f -s -L "$(pwd)/$file" "$base/gnu/bin/$file"
-  done
+  if cd "$prefix/libexec/gnubin/" || cd "$prefix/bin"; then
+    for file in *; do
+      ln -v -f -s -L "$(pwd)/$file" "$base/gnu/bin/$file"
+    done
+  else
+    echo "Problem installing $pkg: unexpected bin directory structure"
+  fi
 
-  cd "$prefix/libexec/gnuman/man1/"
-  for file in *; do
-    ln -v -f -s -L "$(pwd)/$file" "$base/gnu/share/man/man1/$file"
-  done
+  if cd "$prefix/libexec/gnuman/man1/" || cd "$prefix/share/man1"; then
+    for file in *; do
+      ln -v -f -s -L "$(pwd)/$file" "$base/gnu/share/man/man1/$file"
+    done
+  else
+    echo "Problem installing $pkg: unexpected man directory structure"
+  fi
 
 done
 
